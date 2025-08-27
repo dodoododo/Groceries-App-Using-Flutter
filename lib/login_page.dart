@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'SignUpPage.dart';
-import 'ProductPage.dart';
+import 'sign_up_page.dart';
+import 'product_page.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 70,
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(shape: BoxShape.circle),
-              child: Image.asset("assets/images/Group.png"),
+              child: Image.asset("assets/images/group.png"),
             ),
 
             SizedBox(
@@ -78,11 +78,38 @@ class _LoginPageState extends State<LoginPage> {
               height: 20,
             ),
 
+
+            SizedBox(              
+              width: 370,
+              height: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Email",
+                    style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                  ),
+                ],
+              ),
+            ),
             buildEmailInput(),
 
 
             SizedBox(
               height: 20,
+            ),
+            SizedBox(              
+              width: 370,
+              height: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Password",
+                    style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                  ),
+                ],
+              ),
             ),
             buildPassword(),
 
@@ -153,10 +180,6 @@ class _LoginPageState extends State<LoginPage> {
         },
 
         style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w200, wordSpacing: 7),
-        decoration: InputDecoration(
-          labelText: "Email",
-          labelStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w400),
-        ),
       ),
     ),
   );

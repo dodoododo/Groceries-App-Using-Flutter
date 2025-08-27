@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'LoginPage.dart';
+import 'login_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -38,11 +38,7 @@ class _SignupPageState extends State<SignupPage> {
             height: 70,
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(shape: BoxShape.circle),
-            child: Image.asset("assets/images/Group.png"),
-          ),
-
-          SizedBox(
-            height: 40,
+            child: Image.asset("assets/images/group.png"),
           ),
 
           Container(
@@ -70,7 +66,24 @@ class _SignupPageState extends State<SignupPage> {
               ],
             ),
           ),
+          SizedBox(
+            height: 20,
+          ),
 
+
+          SizedBox(              
+            width: 370,
+            height: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "First Name",
+                  style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
           Padding( //password
             padding: const EdgeInsets.all(5),
             child: SizedBox(
@@ -81,7 +94,23 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
+          SizedBox(
+            height: 5,
+          ),
 
+          SizedBox(              
+            width: 370,
+            height: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "Last Name",
+                  style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
           Padding( //password
             padding: const EdgeInsets.all(5),
             child: SizedBox(
@@ -92,7 +121,24 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
+          SizedBox(
+            height: 5,
+          ),
 
+
+          SizedBox(              
+            width: 370,
+            height: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "Username",
+                  style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
           Padding( //password
             padding: const EdgeInsets.all(5),
             child: SizedBox(
@@ -103,17 +149,83 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
+          SizedBox(
+            height: 5,
+          ),
 
 
-
+          SizedBox(              
+            width: 370,
+            height: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "Email",
+                  style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
             buildEmailInput(),
+          SizedBox(
+            height: 5,
+          ),
 
-
-            buildPassword(),
+          SizedBox(              
+            width: 370,
+            height: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "Password",
+                  style: TextStyle(color: const Color.fromARGB(255, 161, 156, 156), fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
+          buildPassword(),
 
             SizedBox(
-              height: 20,
+              height: 10,
             ),
+            SizedBox(
+              width: 370,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'By continuing, you agree to our ',
+                        style: const TextStyle(
+                          color: Color(0xFFA19C9C),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Roboto',
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: 'Terms Of Service',
+                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                          ),
+                          TextSpan(text: ' and '),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+
 
             buildSignupButton(),
 
@@ -140,9 +252,9 @@ class _SignupPageState extends State<SignupPage> {
                     );
                   },
                   child: Text(
-                    "Log In",
+                    "Sign In",
                     style: TextStyle(
-                      color: Colors.blue,
+                      color: Colors.green,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
