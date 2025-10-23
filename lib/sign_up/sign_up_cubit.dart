@@ -1,32 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import 'sign_up_state.dart';
-import 'package:fluttertest/storage/storage.dart';
-import 'package:fluttertest/sign_up/data/sign_up_request.dart';
-import 'package:fluttertest/sign_up/data/sign_up_response.dart';
+import 'sign_up_api_service.dart'; 
+import 'sign_up_request.dart';   
 
 class SignUpCubit extends Cubit<SignUpState> {
-  SignUpCubit() : super(const SignUpState());
+  late final SignUpApiService _apiService;
 
-  String firstName = '';
-  String lastName = '';
-  String username = '';
-  String email = '';
-  String password = '';
+  SignUpCubit() : super(const SignUpState()) {
+    final dio = Dio();
+    dio.options.headers['Content-Type'] = 'application/json';
+    _apiService = SignUpApiService(dio);
+  }
 
   void firstNameChanged(String value) {
-    firstName = value;
-    emit(state.copyWith(isFormValid: _validateForm()));
+    emit(state.copyWith(
+      firstName: value,
+      isFormValid: _validateForm(firstName: value),
+    ));
   }
 
   void lastNameChanged(String value) {
-    lastName = value;
-    emit(state.copyWith(isFormValid: _validateForm()));
+    emit(state.copyWith(
+      lastName: value,
+      isFormValid: _validateForm(lastName: value),
+    ));
   }
 
   void usernameChanged(String value) {
-    username = value;
-    emit(state.copyWith(isFormValid: _validateForm()));
+    emit(state.copyWith(
+      username: value,
+      isFormValid: _validateForm(username: value),
+    ));
   }
 
   void emailChanged(String value) {
@@ -35,12 +40,11 @@ class SignUpCubit extends Cubit<SignUpState> {
     if (value.isEmpty || !emailRegex.hasMatch(value)) {
       error = "Vui lòng nhập đúng định dạng email";
     }
-    email = value;
 
     emit(state.copyWith(
       email: value,
       emailError: error,
-      isFormValid: _validateForm(),
+      isFormValid: _validateForm(email: value, emailError: error),
     ));
   }
 
@@ -50,12 +54,11 @@ class SignUpCubit extends Cubit<SignUpState> {
     if (value.isEmpty || !passRegex.hasMatch(value)) {
       error = "Mật khẩu cần ít nhất 6 kí tự, 1 chữ hoa, 1 chữ thường và 1 số";
     }
-    password = value;
 
     emit(state.copyWith(
       password: value,
       passwordError: error,
-      isFormValid: _validateForm(),
+      isFormValid: _validateForm(password: value, passwordError: error),
     ));
   }
 
@@ -63,52 +66,61 @@ class SignUpCubit extends Cubit<SignUpState> {
     emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
   }
 
-  bool _validateForm() {
-    return email.isNotEmpty &&
-        password.isNotEmpty &&
-        firstName.isNotEmpty &&
-        lastName.isNotEmpty &&
-        username.isNotEmpty &&
-        state.emailError == null &&
-        state.passwordError == null;
+  bool _validateForm({
+    String? firstName,
+    String? lastName,
+    String? username,
+    String? email,
+    String? password,
+    String? emailError,
+    String? passwordError,
+  }) {
+    final newEmail = email ?? state.email;
+    final newPassword = password ?? state.password;
+    final newFirstName = firstName ?? state.firstName;
+    final newLastName = lastName ?? state.lastName;
+    final newUsername = username ?? state.username;
+    
+    final newEmailError = (email != null) ? emailError : state.emailError;
+    final newPasswordError = (password != null) ? passwordError : state.passwordError;
+
+    return newEmail.isNotEmpty &&
+        newPassword.isNotEmpty &&
+        newFirstName.isNotEmpty &&
+        newLastName.isNotEmpty &&
+        newUsername.isNotEmpty &&
+        newEmailError == null &&
+        newPasswordError == null;
   }
 
   Future<void> signUp() async {
-    if (!_validateForm()) return;
+    if (!state.isFormValid) return;
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final request = SignUpRequest(
-      firstName: firstName,
-      lastName: lastName,
-      username: username,
-      email: email,
-      password: password,
+      firstName: state.firstName,
+      lastName: state.lastName,
+      username: state.username,
+      email: state.email,
+      password: state.password,
     );
 
     try {
-      final response = await Dio().post(
-        'https://us-central1-skin-scanner-3c419.cloudfunctions.net/base/v1/auth-service/register',
-        data: request.toJson(),
-        options: Options(headers: {'Content-Type': 'application/json'}),
-      );
+      print('📤 Gửi SignUp Request: ${request.toJson()}');
+      final response = await _apiService.signUp(request);
 
-      print('Response: ${response.statusCode} -> ${response.data}');
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final signUpResponse = SignUpResponse.fromJson(response.data);
-        print('✅ Success: ${signUpResponse.message}');
-        emit(state.copyWith(isLoading: false, isSuccess: true));
-      } else {
-        emit(state.copyWith(
-          isLoading: false,
-          errorMessage: response.data['message'] ?? 'Đăng ký thất bại',
-        ));
-      }
+      print('✅ Success: ${response.message}');
+      emit(state.copyWith(isLoading: false, isSuccess: true));
     } catch (e) {
       print('❌ Lỗi đăng ký: $e');
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      String errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
+      
+      if (e is DioException && e.response?.data['message'] != null) {
+        errorMessage = e.response!.data['message'];
+      }
+      
+      emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
     }
   }
-
 }

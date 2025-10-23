@@ -1,92 +1,102 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
-import 'package:fluttertest/login/data/login_request.dart';
-import 'package:fluttertest/login/data/login_response.dart';
+import 'login_request.dart';
+import 'login_response.dart';
 import 'package:fluttertest/storage/storage.dart';
+import 'login_api_service.dart';
 import 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
-  LoginCubit() : super(const LoginInitial());
+  late final LoginApiService _apiService;
 
-  String email = '';
-  String password = '';
+  LoginCubit() : super(const LoginState()) {
+    final dio = Dio();
+    dio.options.headers['Content-Type'] = 'application/json';
+    _apiService = LoginApiService(dio);
+  }
 
   void emailChanged(String value) {
-    email = value;
-    validateInputs();
-  }
-
-  void passwordChanged(String value) {
-    password = value;
-    validateInputs();
-  }
-
-  void validateInputs() {
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]{2,}@(gmail|yopmail)\.com$');
-    final passRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
-
-    String? emailError;
-    String? passwordError;
-
-    if (email.isEmpty || !emailRegex.hasMatch(email)) {
-      emailError = "Vui lòng nhập đúng định dạng email";
+    String? error;
+    if (value.isEmpty || !emailRegex.hasMatch(value)) {
+      error = "Vui lòng nhập đúng định dạng email";
     }
 
-    if (password.isEmpty || !passRegex.hasMatch(password)) {
-      passwordError =
-          "Mật khẩu cần ít nhất 6 kí tự, 1 chữ hoa, 1 chữ thường và 1 số";
-    }
-
-    emit(LoginFailure(
-      email: email,
-      password: password,
-      emailError: emailError,
-      passwordError: passwordError,
+    emit(state.copyWith(
+      email: value,
+      emailError: error,
+      isFormValid: _validateForm(
+        email: value,
+        password: state.password,
+        emailError: error,
+        passwordError: state.passwordError,
+      ),
     ));
   }
 
-  bool validateForm() {
-    if (state is LoginFailure) {
-      final s = state as LoginFailure;
-      return s.emailError == null && s.passwordError == null;
+  void passwordChanged(String value) {
+    final passRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
+    String? error;
+    if (value.isEmpty || !passRegex.hasMatch(value)) {
+      error = "Mật khẩu cần ít nhất 6 kí tự, 1 chữ hoa, 1 chữ thường và 1 số";
     }
-    return false;
+
+    emit(state.copyWith(
+      password: value,
+      passwordError: error,
+      isFormValid: _validateForm(
+        email: state.email,
+        password: value,
+        emailError: state.emailError,
+        passwordError: error,
+      ),
+    ));
   }
 
-  Future<void> login(String email, String password) async {
-    if (!validateForm()) return;
+  bool _validateForm({
+    required String email,
+    required String password,
+    String? emailError,
+    String? passwordError,
+  }) {
+    return email.isNotEmpty &&
+        password.isNotEmpty &&
+        emailError == null &&
+        passwordError == null;
+  }
 
-    emit(const LoginLoading());
+  void togglePasswordVisibility() {
+    emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
+  }
+
+  Future<void> login() async {
+    if (!state.isFormValid) return;
+    emit(state.copyWith(isLoading: true, apiError: null));
 
     try {
-      print('📤 Sending data: ${({"email": email, "password": password})}');
-      final response = await Dio().post(
-        'https://us-central1-skin-scanner-3c419.cloudfunctions.net/base/v1/auth-service/login',
-        data: LoginRequest(email: email, password: password).toJson(),
-      );
+      final request = LoginRequest(email: state.email, password: state.password);
+      
+      print('📤 Gửi Login Request: ${request.toJson()}');
 
-      if (response.statusCode == 200) {
-        LoginResponse loginResponse = LoginResponse.fromJson(response.data);
-        await Storage.saveToken(loginResponse.accessToken);
-        emit(const LoginSuccess());
-      } else {
-        print('Lỗi 404');
-        emit(LoginFailure(
-          email: email,
-          password: password,
-          emailError: 'Đăng nhập thất bại',
-          passwordError: null,
-        ));
-      }
+      final loginResponse = await _apiService.login(request);
+
+      final token = loginResponse.data.tokens.accessToken;
+
+      await Storage.saveToken(token);
+      emit(state.copyWith(isLoading: false, isSuccess: true));
+
     } catch (e) {
-      print('Catch' + e.toString());
-      emit(LoginFailure(
-        email: email,
-        password: password,
-        emailError: 'Đăng nhập thất bại',
-        passwordError: null,
-      ));
+      print('Login Failed: $e');
+      String errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại.';
+      
+      if (e is DioException) {
+         print('DioException response: ${e.response?.data}');
+         if (e.response?.data['message'] != null) {
+           errorMessage = e.response!.data['message'];
+         }
+      }
+      
+      emit(state.copyWith(isLoading: false, apiError: errorMessage));
     }
   }
-
 }

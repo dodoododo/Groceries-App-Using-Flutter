@@ -13,130 +13,133 @@ class AccountPage extends StatelessWidget {
       create: (_) => AccountCubit(),
       child: BlocBuilder<AccountCubit, AccountState>(
         builder: (context, state) {
-          if (state.isLoading) {
-            return const Scaffold(
+          return state.when(
+            loading: () => const Scaffold(
               body: Center(child: CircularProgressIndicator(color: Colors.green)),
-            );
-          }
-
-          if (state.errorMessage != null) {
-            return Scaffold(
+            ),
+            failure: (errorMessage) => Scaffold(
               body: Center(
-                child: Text(
-                  state.errorMessage!,
-                  style: const TextStyle(color: Colors.red),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-            );
-          }
+            ),
 
-          return Scaffold(
-            backgroundColor: Colors.white,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
+            success: (user) => Scaffold( 
+              backgroundColor: Colors.white,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
 
-                  Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundImage: NetworkImage(state.avatarUrl),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  state.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              state.email,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                    Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundImage: NetworkImage(
+                            user.avatarUrl ?? 
+                            "https://ui-avatars.com/api/?name=${user.username ?? 'User'}"
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Expanded(
-                    child: ListView(
-                      children: const [
-                        Divider(color: Color.fromARGB(255, 194, 190, 190)),
-                        _AccountTile(icon: Icons.shopping_bag_outlined, title: "Orders"),
-                        _AccountTile(icon: Icons.card_giftcard, title: "My Details"),
-                        _AccountTile(icon: Icons.location_on_outlined, title: "Delivery Address"),
-                        _AccountTile(icon: Icons.credit_card_outlined, title: "Payment Methods"),
-                        _AccountTile(icon: Icons.airplane_ticket_outlined, title: "Promo Code"),
-                        _AccountTile(icon: Icons.notifications_none, title: "Notifications"),
-                        _AccountTile(icon: Icons.help_outline, title: "Help"),
-                        _AccountTile(icon: Icons.info_outline, title: "About"),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    user.name ?? user.username ?? 'Unknown User',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user.email, 
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 30),
 
-                  SizedBox(
-                    width: 160,
-                    height: 50,
-                    child: FloatingActionButton(
-                      onPressed: () {},
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                    Expanded(
+                      child: ListView(
+                        children: const [
+                          Divider(color: Color.fromARGB(255, 194, 190, 190)),
+                          _AccountTile(icon: Icons.shopping_bag_outlined, title: "Orders"),
+                          _AccountTile(icon: Icons.card_giftcard, title: "My Details"),
+                          _AccountTile(icon: Icons.location_on_outlined, title: "Delivery Address"),
+                          _AccountTile(icon: Icons.credit_card_outlined, title: "Payment Methods"),
+                          _AccountTile(icon: Icons.airplane_ticket_outlined, title: "Promo Code"),
+                          _AccountTile(icon: Icons.notifications_none, title: "Notifications"),
+                          _AccountTile(icon: Icons.help_outline, title: "Help"),
+                          _AccountTile(icon: Icons.info_outline, title: "About"),
+                        ],
                       ),
                     ),
-                  ),
 
+                    const SizedBox(height: 10),
 
-                  const SizedBox(height: 10),
+                    SizedBox(
+                      width: 160,
+                      height: 50,
+                      child: FloatingActionButton(
+                        onPressed: () {},
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      ),
+                    ),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.green.shade600, width: 1.2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 10),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.green.shade600, width: 1.2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        onPressed: () => _showLogoutDialog(context),
-                        icon: const Icon(Icons.logout, color: Colors.green),
-                        label: const Text(
-                          "Log Out",
-                          style: TextStyle(fontSize: 16, color: Colors.green),
+                          onPressed: () => _showLogoutDialog(context),
+                          icon: const Icon(Icons.logout, color: Colors.green),
+                          label: const Text(
+                            "Log Out",
+                            style: TextStyle(fontSize: 16, color: Colors.green),
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           );
@@ -164,10 +167,12 @@ class AccountPage extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await cubit.logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-              );
+              if (context.mounted) {
+                 Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              }
             },
             child: const Text("Yes", style: TextStyle(color: Colors.white)),
           ),
