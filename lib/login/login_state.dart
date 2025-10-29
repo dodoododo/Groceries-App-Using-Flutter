@@ -1,72 +1,18 @@
-abstract class LoginState {
-  // final String? emailError;
-  // final String? passwordError;
-  // final bool isFormValid;
-  // final bool isLoading;
-  // final bool isSuccess;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  // const LoginState({
-  //   this.emailError,
-  //   this.passwordError,
-  //   this.isFormValid = false,
-  //   this.isLoading = false,
-  //   this.isSuccess = false,
-  // });
+part 'login_state.freezed.dart';
 
-  // LoginState copyWith({
-  //   String? emailError,
-  //   String? passwordError,
-  //   bool? isFormValid,
-  //   bool? isLoading,
-  //   bool? isSuccess,
-  // }) {
-  //   return LoginState(
-  //     emailError: emailError,
-  //     passwordError: passwordError,
-  //     isFormValid: isFormValid ?? this.isFormValid,
-  //     isLoading: isLoading ?? this.isLoading,
-  //     isSuccess: isSuccess ?? this.isSuccess,
-  //   );
-  // }
-  const LoginState();
-}
-
-class LoginInitial extends LoginState {
-  const LoginInitial();
-}
-
-class LoginLoading extends LoginState {
-  const LoginLoading();
-}
-
-class LoginSuccess extends LoginState {
-  const LoginSuccess();
-}
-
-class LoginFailure extends LoginState {
-  final String email;
-  final String password;
-  final String? emailError;
-  final String? passwordError;
-
-  const LoginFailure({
-    required this.email,
-    required this.password,
-    this.emailError,
-    this.passwordError,
-  });
-
-  LoginFailure copyWith({
-    String? email,
-    String? password,
+@freezed
+class LoginState with _$LoginState {
+  const factory LoginState({
+    @Default('') String email,
+    @Default('') String password,
     String? emailError,
     String? passwordError,
-  }) {
-    return LoginFailure(
-      email: email ?? this.email,
-      password: password ?? this.password,
-      emailError: emailError ?? this.emailError,
-      passwordError: passwordError ?? this.passwordError,
-    );
-  }
+    @Default(false) bool isPasswordVisible,
+    @Default(false) bool isFormValid,
+    @Default(false) bool isLoading,
+    @Default(false) bool isSuccess,
+    String? apiError,    
+  }) = _LoginState;
 }

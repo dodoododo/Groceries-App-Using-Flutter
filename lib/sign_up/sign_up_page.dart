@@ -14,10 +14,29 @@ class SignUpPage extends StatelessWidget {
       child: BlocListener<SignUpCubit, SignUpState>(
         listener: (context, state) {
           if (state.isSuccess) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text('Đăng ký thành công! Vui lòng đăng nhập.'),
+                  backgroundColor: Colors.green,
+                ),
+              );
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
             );
+          }
+          
+          if (state.errorMessage != null) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: Colors.red,
+                ),
+              );
           }
         },
         child: const _SignUpView(),
@@ -74,7 +93,7 @@ class _SignUpView extends StatelessWidget {
           child: BlocBuilder<SignUpCubit, SignUpState>(
             builder: (context, state) {
               if (state.isLoading) {
-                return Center(
+                return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

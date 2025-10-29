@@ -4,8 +4,6 @@ import 'package:fluttertest/home_screen.dart';
 import '../sign_up/sign_up_page.dart';
 import 'login_cubit.dart';
 import 'login_state.dart';
-import '../home_loading_screen.dart';
-import '../home_screen.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -16,11 +14,21 @@ class LoginPage extends StatelessWidget {
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
-          if (state is LoginSuccess) {
+          if (state.isSuccess) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
+          }
+          if (state.apiError != null) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(state.apiError!),
+                  backgroundColor: Colors.red,
+                ),
+              );
           }
         },
         child: const _LoginView(),
@@ -35,7 +43,6 @@ class _LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<LoginCubit>();
 
-    bool isPasswordVisible = false;
     return Scaffold(
       body: Container(
         constraints: const BoxConstraints.expand(width: double.infinity),
@@ -55,7 +62,7 @@ class _LoginView extends StatelessWidget {
         child: SingleChildScrollView(
           child: BlocBuilder<LoginCubit, LoginState>(
             builder: (context, state) {
-              if (state is LoginLoading) {
+              if (state.isLoading) {
                 return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -77,9 +84,7 @@ class _LoginView extends StatelessWidget {
                       decoration: const BoxDecoration(shape: BoxShape.circle),
                       child: Image.asset("assets/images/group.png"),
                     ),
-
                     const SizedBox(height: 40),
-
                     Container(
                       width: 370,
                       child: Column(
@@ -105,9 +110,7 @@ class _LoginView extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     SizedBox(
                       width: 370,
                       height: 20,
@@ -125,7 +128,6 @@ class _LoginView extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     SizedBox(
                       width: 370,
                       height: 70,
@@ -133,9 +135,7 @@ class _LoginView extends StatelessWidget {
                         onChanged: cubit.emailChanged,
                         decoration: InputDecoration(
                           errorStyle: const TextStyle(color: Colors.red),
-                          errorText: state is LoginFailure
-                              ? state.emailError
-                              : null,
+                          errorText: state.emailError,
                         ),
                         style: const TextStyle(
                           color: Colors.black,
@@ -145,9 +145,7 @@ class _LoginView extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     SizedBox(
                       width: 370,
                       height: 20,
@@ -170,20 +168,16 @@ class _LoginView extends StatelessWidget {
                       height: 70,
                       child: TextField(
                         onChanged: cubit.passwordChanged,
-                        obscureText: isPasswordVisible,
+                        obscureText: !state.isPasswordVisible,
                         decoration: InputDecoration(
-                          errorText: state is LoginFailure
-                              ? state.passwordError
-                              : null,
+                          errorText: state.passwordError,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isPasswordVisible
+                              state.isPasswordVisible
                                   ? Icons.visibility
                                   : Icons.visibility_off,
                             ),
-                            onPressed: () {
-                              isPasswordVisible = !isPasswordVisible;
-                            },
+                            onPressed: cubit.togglePasswordVisibility,
                           ),
                         ),
                         style: const TextStyle(
@@ -194,13 +188,11 @@ class _LoginView extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 40),
-
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         fixedSize: const Size(370, 55),
-                        backgroundColor: cubit.validateForm()
+                        backgroundColor: state.isFormValid
                             ? Colors.green
                             : Colors.grey,
                         foregroundColor: Colors.white,
@@ -212,16 +204,7 @@ class _LoginView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: cubit.validateForm()
-                          ? () => cubit.login(cubit.email, cubit.password)
-                          // if (context.read<LoginCubit>().state is LoginSuccess) {
-                          //   Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(builder: (context) => const HomeScreen()),
-                          //   );
-                          // }
-                          // }
-                          : null,
+                      onPressed: state.isFormValid ? cubit.login : null,
                       child: const Text(
                         "Log In",
                         style: TextStyle(
@@ -231,9 +214,7 @@ class _LoginView extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
